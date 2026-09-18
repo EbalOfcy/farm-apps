@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Пиццерия Forno</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #FAF0E6);
+            --text-color: var(--tg-theme-text-color, #2C1810);
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #F4ECE1);
+            --hint-color: var(--tg-theme-hint-color, #7D6B5D);
+            --link-color: var(--tg-theme-link-color, #7A1C1C);
+            --button-color: var(--tg-theme-button-color, #7A1C1C);
+            --button-text-color: var(--tg-theme-button-text-color, #FFFFFF);
+            --brand-red: #7A1C1C;
+            --brand-red-hover: #5E1414;
+            --brand-cream: #FFFDF9;
+            --border-color: rgba(122, 28, 28, 0.15);
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+            line-height: 1.4;
+            padding-bottom: 30px;
+        }
+
+        .container {
+            max-width: 540px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 16px 8px 24px 8px;
+            border-bottom: 2px dashed var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .header-logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 8px auto;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--brand-red);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            font-size: 15px;
+            color: var(--hint-color);
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--brand-red);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .pizza-card {
+            background-color: var(--secondary-bg);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pizza-header {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .pizza-icon {
+            width: 72px;
+            height: 72px;
+            flex-shrink: 0;
+        }
+
+        .pizza-info {
+            flex-grow: 1;
+        }
+
+        .pizza-title {
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .pizza-desc {
+            font-size: 14px;
+            color: var(--hint-color);
+            line-height: 1.3;
+        }
+
+        .size-selector {
+            display: flex;
+            background: var(--bg-color);
+            border-radius: 10px;
+            padding: 3px;
+            gap: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .size-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            background: transparent;
+            color: var(--text-color);
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .size-btn.active {
+            background-color: var(--brand-red);
+            color: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(122, 28, 28, 0.25);
+        }
+
+        .pizza-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .pizza-price {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--brand-red);
+        }
+
+        .add-btn {
+            background-color: var(--brand-red);
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .add-btn:active {
+            background-color: var(--brand-red-hover);
+        }
+
+        .cart-section {
+            background-color: var(--secondary-bg);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+        }
+
+        .cart-empty {
+            text-align: center;
+            color: var(--hint-color);
+            padding: 16px 0;
+            font-size: 15px;
+        }
+
+        .cart-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .cart-item-info {
+            flex-grow: 1;
+            padding-right: 8px;
+        }
+
+        .cart-item-title {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .cart-item-sub {
+            font-size: 13px;
+            color: var(--hint-color);
+        }
+
+        .cart-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qty-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qty-btn:active {
+            background-color: var(--border-color);
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #D9534F;
+            cursor: pointer;
+            padding: 4px;
+            margin-left: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .cart-summary {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .form-section {
+            background-color: var(--secondary-bg);
+            border-radius: 16px;
+            padding: 18px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--brand-red);
+        }
+
+        textarea.input-field {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .input-required {
+            color: var(--brand-red);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <svg class="header-logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="30" fill="#7A1C1C"/>
+                <path d="M32 8L52 48H12L32 8Z" fill="#F4ECE1"/>
+                <circle cx="32" cy="24" r="3" fill="#7A1C1C"/>
+                <circle cx="26" cy="34" r="2.5" fill="#7A1C1C"/>
+                <circle cx="38" cy="36" r="2.5" fill="#7A1C1C"/>
+                <path d="M12 48C20 54 44 54 52 48" stroke="#D4AF37" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <h1>Forno</h1>
+            <p>Семейная пиццерия на дровах</p>
+        </header>
+
+        <main>
+            <div class="section-title">
+                <span>🍕</span> Меню пиццы
+            </div>
+            <div class="menu-list" id="menuList"></div>
+
+            <div class="section-title">
+                <span>🛒</span> Ваша корзина
+            </div>
+            <div class="cart-section">
+                <div id="cartItemsContainer" class="cart-empty">Корзина пуста. Выберите пиццу выше.</div>
+                <div id="cartSummary" class="cart-summary" style="display: none;">
+                    <span>Итого:</span>
+                    <span id="cartTotalPrice" class="pizza-price">0 ₽</span>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <span>📍</span> Доставка
+            </div>
+            <div class="form-section">
+                <div class="input-group">
+                    <label for="addressInput">Адрес доставки <span class="input-required">*</span></label>
+                    <input type="text" id="addressInput" class="input-field" placeholder="Улица, дом, квартира, подъезд, этаж">
+                </div>
+                <div class="input-group">
+                    <label for="commentInput">Комментарий к заказу</label>
+                    <textarea id="commentInput" class="input-field" placeholder="Пожелания курьеру или по приготовлению"></textarea>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const PIZZAS = [
+            {
+                id: 'margherita',
+                name: 'Маргарита',
+                desc: 'Томатный соус, сыр моцарелла, свежий базилик, оливковое масло',
+                basePrice: 520
+            },
+            {
+                id: 'pepperoni',
+                name: 'Пепперони',
+                desc: 'Томатный соус, пикантная пепперони, двойная моцарелла, орегано',
+                basePrice: 640
+            },
+            {
+                id: '4cheeses',
+                name: 'Четыре сыра',
+                desc: 'Сливочный соус, моцарелла, горгонзола, пармезан, чеддер',
+                basePrice: 720
+            },
+            {
+                id: 'diablo',
+                name: 'Дьявола',
+                desc: 'Томатный соус, острая салями, халапеньо, моцарелла, хлопья чили',
+                basePrice: 680
+            },
+            {
+                id: 'bbq_chicken',
+                name: 'Цыпленок Барбекю',
+                desc: 'Соус BBQ, запеченное филе цыпленка, красный лук, моцарелла',
+                basePrice: 690
+            },
+            {
+                id: 'truffle_mushroom',
+                name: 'Грибная с трюфелем',
+                desc: 'Сливочный соус, шампиньоны, белые грибы, моцарелла, трюфельное масло',
+                basePrice: 750
+            },
+            {
+                id: 'capricciosa',
+                name: 'Капричоза',
+                desc: 'Томатный соус, ветчина, шампиньоны, артишоки, маслины, моцарелла',
+                basePrice: 710
+            },
+            {
+                id: 'prosciutto_funghi',
+                name: 'Прошутто Фунги',
+                desc: 'Томатный соус, пармская ветчина, свежие шампиньоны, моцарелла',
+                basePrice: 730
+            }
+        ];
+
+        const LARGE_SIZE_SURCHARGE = 250;
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+
+        let selectedSizes = {};
+        let cart = [];
+
+        function initApp() {
+            try {
+                if (tg) {
+                    tg.ready();
+                    tg.expand();
+                    if (tg.MainButton) {
+                        tg.MainButton.onClick(handleCheckout);
+                    }
+                }
+            } catch (err) {
+                console.error('Telegram WebApp init error:', err);
+            }
+
+            PIZZAS.forEach(p => {
+                selectedSizes[p.id] = 25;
+            });
+
+            renderMenu();
+            renderCart();
+            setupInputListeners();
+        }
+
+        function triggerHaptic() {
+            try {
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('light');
+                }
+            } catch (e) {
+                console.error('Haptic error:', e);
+            }
+        }
+
+        function getPizzaSvg() {
+            return `
+                <svg class="pizza-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="32" r="28" fill="#E6A15C" stroke="#B87333" stroke-width="3"/>
+                    <circle cx="32" cy="32" r="23" fill="#D9381E"/>
+                    <circle cx="32" cy="32" r="21" fill="#FFDA66"/>
+                    <circle cx="22" cy="22" r="4" fill="#A81C1C"/>
+                    <circle cx="42" cy="24" r="4" fill="#A81C1C"/>
+                    <circle cx="32" cy="38" r="4" fill="#A81C1C"/>
+                    <circle cx="20" cy="36" r="3.5" fill="#A81C1C"/>
+                    <circle cx="42" cy="40" r="3.5" fill="#A81C1C"/>
+                    <path d="M25 18Q28 14 31 18" stroke="#2D5A27" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M35 30Q38 26 41 30" stroke="#2D5A27" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            `;
+        }
+
+        function renderMenu() {
+            const menuContainer = document.getElementById('menuList');
+            menuContainer.innerHTML = '';
+
+            PIZZAS.forEach(pizza => {
+                const card = document.createElement('div');
+                card.className = 'pizza-card';
+
+                const size = selectedSizes[pizza.id];
+                const currentPrice = pizza.basePrice + (size === 35 ? LARGE_SIZE_SURCHARGE : 0);
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'pizza-header';
+                headerDiv.innerHTML = `
+                    ${getPizzaSvg()}
+                    <div class="pizza-info">
+                        <div class="pizza-title">${pizza.name}</div>
+                        <div class="pizza-desc">${pizza.desc}</div>
+                    </div>
+                `;
+
+                const sizeSelector = document.createElement('div');
+                sizeSelector.className = 'size-selector';
+
+                const btn25 = document.createElement('button'); // #ИНТЕРАКТИВ
+                btn25.className = `size-btn ${size === 25 ? 'active' : ''}`;
+                btn25.textContent = '25 см';
+                btn25.onclick = () => {
+                    triggerHaptic();
+                    selectedSizes[pizza.id] = 25;
+                    renderMenu();
+                };
+
+                const btn35 = document.createElement('button'); // #ИНТЕРАКТИВ
+                btn35.className = `size-btn ${size === 35 ? 'active' : ''}`;
+                btn35.textContent = '35 см (+250 ₽)';
+                btn35.onclick = () => {
+                    triggerHaptic();
+                    selectedSizes[pizza.id] = 35;
+                    renderMenu();
+                };
+
+                sizeSelector.appendChild(btn25);
+                sizeSelector.appendChild(btn35);
+
+                const footerDiv = document.createElement('div');
+                footerDiv.className = 'pizza-footer';
+
+                const priceSpan = document.createElement('span');
+                priceSpan.className = 'pizza-price';
+                priceSpan.textContent = `${currentPrice} ₽`;
+
+                const addBtn = document.createElement('button'); // #ИНТЕРАКТИВ
+                addBtn.className = 'add-btn';
+                addBtn.innerHTML = `<span>+ Добавить</span>`;
+                addBtn.onclick = () => {
+                    addToCart(pizza, selectedSizes[pizza.id], currentPrice);
+                };
+
+                footerDiv.appendChild(priceSpan);
+                footerDiv.appendChild(addBtn);
+
+                card.appendChild(headerDiv);
+                card.appendChild(sizeSelector);
+                card.appendChild(footerDiv);
+
+                menuContainer.appendChild(card);
+            });
+        }
+
+        function addToCart(pizza, size, price) {
+            triggerHaptic();
+            const existingIndex = cart.findIndex(item => item.id === pizza.id && item.size === size);
+
+            if (existingIndex > -1) {
+                cart[existingIndex].quantity += 1;
+            } else {
+                cart.push({
+                    id: pizza.id,
+                    name: pizza.name,
+                    size: size,
+                    price: price,
+                    quantity: 1
+                });
+            }
+
+            renderCart();
+        }
+
+        function updateQuantity(index, delta) {
+            triggerHaptic();
+            cart[index].quantity += delta;
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            renderCart();
+        }
+
+        function removeFromCart(index) {
+            triggerHaptic();
+            cart.splice(index, 1);
+            renderCart();
+        }
+
+        function calculateTotal() {
+            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cartItemsContainer');
+            const summary = document.getElementById('cartSummary');
+            const totalPriceEl = document.getElementById('cartTotalPrice');
+
+            if (cart.length === 0) {
+                container.className = 'cart-empty';
+                container.textContent = 'Корзина пуста. Выберите пиццу выше.';
+                summary.style.display = 'none';
+            } else {
+                container.className = 'cart-items';
+                container.innerHTML = '';
+
+                cart.forEach((item, index) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'cart-item';
+
+                    const infoEl = document.createElement('div');
+                    infoEl.className = 'cart-item-info';
+                    infoEl.innerHTML = `
+                        <div class="cart-item-title">${item.name} (${item.size} см)</div>
+                        <div class="cart-item-sub">${item.price} ₽ × ${item.quantity} = ${item.price * item.quantity} ₽</div>
+                    `;
+
+                    const controlsEl = document.createElement('div');
+                    controlsEl.className = 'cart-controls';
+
+                    const decBtn = document.createElement('button'); // #ИНТЕРАКТИВ
+                    decBtn.className = 'qty-btn';
+                    decBtn.textContent = '-';
+                    decBtn.onclick = () => updateQuantity(index, -1);
+
+                    const qtySpan = document.createElement('span');
+                    qtySpan.style.fontWeight = 'bold';
+                    qtySpan.textContent = item.quantity;
+
+                    const incBtn = document.createElement('button'); // #ИНТЕРАКТИВ
+                    incBtn.className = 'qty-btn';
+                    incBtn.textContent = '+';
+                    incBtn.onclick = () => updateQuantity(index, 1);
+
+                    const removeBtn = document.createElement('button'); // #ИНТЕРАКТИВ
+                    removeBtn.className = 'remove-btn';
+                    removeBtn.innerHTML = `
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    `;
+                    removeBtn.onclick = () => removeFromCart(index);
+
+                    controlsEl.appendChild(decBtn);
+                    controlsEl.appendChild(qtySpan);
+                    controlsEl.appendChild(incBtn);
+                    controlsEl.appendChild(removeBtn);
+
+                    itemEl.appendChild(infoEl);
+                    itemEl.appendChild(controlsEl);
+
+                    container.appendChild(itemEl);
+                });
+
+                summary.style.display = 'flex';
+                totalPriceEl.textContent = `${calculateTotal()} ₽`;
+            }
+
+            updateMainButton();
+        }
+
+        function setupInputListeners() {
+            const addressInput = document.getElementById('addressInput');
+            addressInput.addEventListener('input', updateMainButton);
+        }
+
+        function updateMainButton() {
+            if (!tg || !tg.MainButton) return;
+
+            const total = calculateTotal();
+            const address = document.getElementById('addressInput').value.trim();
+
+            if (cart.length === 0) {
+                tg.MainButton.hide();
+                return;
+            }
+
+            tg.MainButton.show();
+
+            if (!address) {
+                tg.MainButton.setText('УКАЖИТЕ АДРЕС ДОСТАВКИ');
+                tg.MainButton.disable();
+                tg.MainButton.setParams({
+                    color: '#A8A8A8',
+                    text_color: '#FFFFFF'
+                });
+            } else {
+                tg.MainButton.setText(`ОФОРМИТЬ ЗАКАЗ • ${total} ₽`);
+                tg.MainButton.enable();
+                tg.MainButton.setParams({
+                    color: '#7A1C1C',
+                    text_color: '#FFFFFF'
+                });
+            }
+        }
+
+        function handleCheckout() {
+            const address = document.getElementById('addressInput').value.trim();
+            const comment = document.getElementById('commentInput').value.trim();
+            const total = calculateTotal();
+
+            if (cart.length === 0 || !address) {
+                return;
+            }
+
+            const orderData = {
+                restaurant: 'Forno',
+                items: cart,
+                totalPrice: total,
+                address: address,
+                comment: comment,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                if (tg) {
+                    tg.sendData(JSON.stringify(orderData));
+                } else {
+                    alert('Заказ сформирован:\n' + JSON.stringify(orderData, null, 2));
+                }
+            } catch (err) {
+                console.error('Error sending order data:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
