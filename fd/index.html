@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Барбершоп Борода</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: var(--tg-theme-bg-color, #ffffff);
+      --text-color: var(--tg-theme-text-color, #1a1a1a);
+      --hint-color: var(--tg-theme-hint-color, #8e8e93);
+      --link-color: var(--tg-theme-link-color, #2481cc);
+      --button-color: var(--tg-theme-button-color, #2481cc);
+      --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+      --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
+      --danger-color: #ff3b30;
+      --card-radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 76px;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 16px;
+      background-color: var(--secondary-bg-color);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .screen {
+      display: none;
+      padding: 16px;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--hint-color);
+      margin-bottom: 12px;
+      margin-top: 16px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    /* Cards */
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .service-card {
+      background-color: var(--secondary-bg-color);
+      border-radius: var(--card-radius);
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .service-card.selected {
+      border-color: var(--button-color);
+      background-color: var(--secondary-bg-color);
+    }
+
+    .service-info {
+      flex: 1;
+    }
+
+    .service-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .service-meta {
+      font-size: 13px;
+      color: var(--hint-color);
+    }
+
+    .select-btn {
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .service-card.selected .select-btn {
+      background-color: var(--hint-color);
+    }
+
+    .summary-bar {
+      margin-top: 18px;
+      background-color: var(--secondary-bg-color);
+      padding: 14px;
+      border-radius: var(--card-radius);
+      display: flex;
+      justify-content: space-between;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    /* Grid selector */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .date-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+
+    .grid-btn {
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+      padding: 10px 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .grid-btn.active {
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      border-color: var(--button-color);
+    }
+
+    .grid-btn:disabled, .grid-btn.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--hint-color);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      background-color: var(--secondary-bg-color);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 15px;
+      color: var(--text-color);
+      outline: none;
+      user-select: text;
+    }
+
+    .form-input:focus {
+      border-color: var(--button-color);
+    }
+
+    .error-hint {
+      color: var(--danger-color);
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .error-hint.visible {
+      display: block;
+    }
+
+    .action-btn-container {
+      margin-top: 18px;
+    }
+
+    .main-submit-btn {
+      width: 100%;
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: block;
+    }
+
+    .main-submit-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* Booking items */
+    .booking-card {
+      background-color: var(--secondary-bg-color);
+      border-radius: var(--card-radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .booking-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .booking-detail {
+      font-size: 14px;
+      margin-bottom: 4px;
+      color: var(--text-color);
+    }
+
+    .booking-meta {
+      font-size: 13px;
+      color: var(--hint-color);
+      margin-bottom: 10px;
+    }
+
+    .cancel-btn {
+      background-color: transparent;
+      color: var(--danger-color);
+      border: 1px solid var(--danger-color);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--hint-color);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: var(--bg-color);
+      border-radius: 16px;
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .modal-body {
+      font-size: 14px;
+      color: var(--text-color);
+      margin-bottom: 18px;
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    .modal-btn {
+      width: 100%;
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Bottom nav */
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: var(--secondary-bg-color);
+      display: flex;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      z-index: 10;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--hint-color);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      color: var(--button-color);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Барбершоп «Борода»</h1>
+  </header>
+
+  <!-- SCREEN 1: Services -->
+  <section id="services-screen" class="screen active">
+    <div class="section-title">Выберите услуги</div>
+    <div class="card-list" id="services-list">
+      <div class="service-card" data-id="1" data-price="1500" data-duration="45">
+        <div class="service-info">
+          <div class="service-name">Мужская стрижка</div>
+          <div class="service-meta">1500 ₽ • 45 мин</div>
+        </div>
+        <button class="select-btn" onclick="toggleService(1)">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+      <div class="service-card" data-id="2" data-price="900" data-duration="30">
+        <div class="service-info">
+          <div class="service-name">Стрижка машинкой</div>
+          <div class="service-meta">900 ₽ • 30 мин</div>
+        </div>
+        <button class="select-btn" onclick="toggleService(2)">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+      <div class="service-card" data-id="3" data-price="800" data-duration="30">
+        <div class="service-info">
+          <div class="service-name">Моделирование бороды</div>
+          <div class="service-meta">800 ₽ • 30 мин</div>
+        </div>
+        <button class="select-btn" onclick="toggleService(3)">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+      <div class="service-card" data-id="4" data-price="2100" data-duration="75">
+        <div class="service-info">
+          <div class="service-name">Стрижка + борода</div>
+          <div class="service-meta">2100 ₽ • 75 мин</div>
+        </div>
+        <button class="select-btn" onclick="toggleService(4)">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+      <div class="service-card" data-id="5" data-price="1000" data-duration="30">
+        <div class="service-info">
+          <div class="service-name">Детская стрижка</div>
+          <div class="service-meta">1000 ₽ • 30 мин</div>
+        </div>
+        <button class="select-btn" onclick="toggleService(5)">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+      <div class="service-card" data-id="6" data-price="1200" data-duration="40">
+        <div class="service-info">
+          <div class="service-name">Камуфляж седины</div>
+          <div class="service-meta">1200 ₽ • 40 мин</div>
+        </div>
+        <button class="select-btn" onclick="toggleService(6)">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+    </div>
+
+    <div class="summary-bar">
+      <span>Итого: <span id="total-price">0 ₽</span></span>
+      <span>Время: <span id="total-time">0 мин</span></span>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: Booking -->
+  <section id="booking-screen" class="screen">
+    <div class="section-title">Барбер</div>
+    <div class="btn-grid" id="barber-grid">
+      <button class="grid-btn" data-value="Артём" onclick="selectBarber('Артём')">Артём</button> <!-- #ИНТЕРАКТИВ -->
+      <button class="grid-btn" data-value="Денис" onclick="selectBarber('Денис')">Денис</button> <!-- #ИНТЕРАКТИВ -->
+      <button class="grid-btn" data-value="Игорь" onclick="selectBarber('Игорь')">Игорь</button> <!-- #ИНТЕРАКТИВ -->
+    </div>
+
+    <div class="section-title">Дата</div>
+    <div class="date-grid" id="date-grid"></div>
+
+    <div class="section-title">Время</div>
+    <div class="time-grid" id="time-grid"></div>
+
+    <div class="section-title">Контактные данные</div>
+    <div class="form-group">
+      <label class="form-label" for="client-name">Ваше имя</label>
+      <input type="text" id="client-name" class="form-input" placeholder="Иван" oninput="validateBookingForm()"> <!-- #ИНТЕРАКТИВ -->
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="client-phone">Телефон</label>
+      <input type="tel" id="client-phone" class="form-input" placeholder="+7 999 123-45-67" oninput="validateBookingForm()"> <!-- #ИНТЕРАКТИВ -->
+      <div id="phone-error" class="error-hint">Введите корректный номер телефона (не менее 10 цифр)</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="client-comment">Комментарий к записи</label>
+      <textarea id="client-comment" class="form-input" rows="2" placeholder="Пожелания мастеру" oninput="validateBookingForm()"></textarea> <!-- #ИНТЕРАКТИВ -->
+    </div>
+
+    <div class="action-btn-container" id="fallback-submit-container">
+      <button id="book-action-btn" class="main-submit-btn" disabled onclick="submitBooking()">Записаться</button> <!-- #ИНТЕРАКТИВ -->
+    </div>
+  </section>
+
+  <!-- SCREEN 3: My Bookings -->
+  <section id="my-bookings-screen" class="screen">
+    <div class="section-title">Ваши записи</div>
+    <div id="bookings-list" class="card-list"></div>
+  </section>
+
+  <!-- CONFIRMATION MODAL -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">Запись оформлена!</div>
+      <div class="modal-body" id="modal-details"></div>
+      <button class="modal-btn" onclick="closeConfirmModal()">Готово</button> <!-- #ИНТЕРАКТИВ -->
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="tab-btn active" onclick="switchScreen('services')">Услуги</button> <!-- #ИНТЕРАКТИВ #ВКЛАДКА -->
+    <button class="tab-btn" onclick="switchScreen('booking')">Запись</button> <!-- #ИНТЕРАКТИВ #ВКЛАДКА -->
+    <button class="tab-btn" onclick="switchScreen('my-bookings')">Мои записи</button> <!-- #ИНТЕРАКТИВ #ВКЛАДКА -->
+  </nav>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    const servicesData = [
+      { id: 1, name: 'Мужская стрижка', price: 1500, duration: 45 },
+      { id: 2, name: 'Стрижка машинкой', price: 900, duration: 30 },
+      { id: 3, name: 'Моделирование бороды', price: 800, duration: 30 },
+      { id: 4, name: 'Стрижка + борода', price: 2100, duration: 75 },
+      { id: 5, name: 'Детская стрижка', price: 1000, duration: 30 },
+      { id: 6, name: 'Камуфляж седины', price: 1200, duration: 40 }
+    ];
+
+    let selectedServiceIds = [];
+    let selectedBarber = null;
+    let selectedDate = null;
+    let selectedTime = null;
+    let currentScreen = 'services';
+
+    const bookedSlotsList = ['11:00', '13:30', '16:00', '18:30'];
+
+    function triggerHaptic(type = 'impact', style = 'light') {
+      try {
+        if (tg?.HapticFeedback) {
+          if (type === 'impact') tg.HapticFeedback.impactOccurred(style);
+          if (type === 'notification') tg.HapticFeedback.notificationOccurred(style);
+        }
+      } catch (e) {}
+    }
+
+    function switchScreen(screenName) {
+      triggerHaptic('impact', 'light');
+      currentScreen = screenName;
+
+      document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      const screenElement = document.getElementById(`${screenName}-screen`);
+      if (screenElement) screenElement.classList.add('active');
+
+      const tabIndex = screenName === 'services' ? 0 : screenName === 'booking' ? 1 : 2;
+      const tabs = document.querySelectorAll('.tab-btn');
+      if (tabs[tabIndex]) tabs[tabIndex].classList.add('active');
+
+      if (screenName === 'services') {
+        if (tg?.BackButton) tg.BackButton.hide();
+      } else {
+        if (tg?.BackButton) {
+          tg.BackButton.show();
+          tg.BackButton.onClick(() => switchScreen('services'));
+        }
+      }
+
+      if (screenName === 'booking') {
+        updateTelegramMainButton();
+      } else {
+        if (tg?.MainButton) tg.MainButton.hide();
+      }
+
+      if (screenName === 'my-bookings') {
+        renderMyBookings();
+      }
+    }
+
+    function toggleService(id) {
+      triggerHaptic('impact', 'light');
+      const index = selectedServiceIds.indexOf(id);
+      if (index === -1) {
+        selectedServiceIds.push(id);
+      } else {
+        selectedServiceIds.splice(index, 1);
+      }
+
+      document.querySelectorAll('.service-card').forEach(card => {
+        const cardId = parseInt(card.getAttribute('data-id'), 10);
+        const btn = card.querySelector('.select-btn');
+        if (selectedServiceIds.includes(cardId)) {
+          card.classList.add('selected');
+          if (btn) btn.textContent = 'Выбрано';
+        } else {
+          card.classList.remove('selected');
+          if (btn) btn.textContent = 'Выбрать';
+        }
+      });
+
+      let totalSum = 0;
+      let totalMinutes = 0;
+      selectedServiceIds.forEach(sid => {
+        const item = servicesData.find(s => s.id === sid);
+        if (item) {
+          totalSum += item.price;
+          totalMinutes += item.duration;
+        }
+      });
+
+      document.getElementById('total-price').textContent = `${totalSum} ₽`;
+      document.getElementById('total-time').textContent = `${totalMinutes} мин`;
+
+      validateBookingForm();
+    }
+
+    function selectBarber(name) {
+      triggerHaptic('impact', 'light');
+      selectedBarber = name;
+      document.querySelectorAll('#barber-grid .grid-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-value') === name);
+      });
+      validateBookingForm();
+    }
+
+    function buildNext7Days() {
+      const container = document.getElementById('date-grid');
+      container.innerHTML = '';
+      const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() + i);
+        const dayOfWeek = days[d.getDay()];
+        const dayOfMonth = d.getDate();
+        const monthName = months[d.getMonth()];
+        const dateValue = `${dayOfMonth} ${monthName}`;
+
+        const btn = document.createElement('button');
+        btn.className = 'grid-btn';
+        btn.setAttribute('data-value', dateValue);
+        btn.innerHTML = `${dayOfMonth} ${monthName}<br><small>${dayOfWeek}</small>`; // #ИНТЕРАКТИВ
+        btn.onclick = () => {
+          triggerHaptic('impact', 'light');
+          selectedDate = dateValue;
+          document.querySelectorAll('#date-grid .grid-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          validateBookingForm();
+        };
+        container.appendChild(btn);
+      }
+    }
+
+    function buildTimeSlots() {
+      const container = document.getElementById('time-grid');
+      container.innerHTML = '';
+      const slots = [];
+      for (let h = 10; h <= 20; h++) {
+        const hh = h < 10 ? `0${h}` : `${h}`;
+        slots.push(`${hh}:00`);
+        if (h !== 20) slots.push(`${hh}:30`);
+      }
+
+      slots.forEach(slot => {
+        const btn = document.createElement('button');
+        btn.className = 'grid-btn';
+        btn.textContent = slot; // #ИНТЕРАКТИВ
+        const isBooked = bookedSlotsList.includes(slot);
+        if (isBooked) {
+          btn.disabled = true;
+          btn.classList.add('disabled');
+        } else {
+          btn.onclick = () => {
+            triggerHaptic('impact', 'light');
+            selectedTime = slot;
+            document.querySelectorAll('#time-grid .grid-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            validateBookingForm();
+          };
+        }
+        container.appendChild(btn);
+      });
+    }
+
+    function isPhoneValid(phone) {
+      const cleaned = phone.replace(/[^0-9]/g, '');
+      return cleaned.length >= 10;
+    }
+
+    function validateBookingForm() {
+      const nameInput = document.getElementById('client-name');
+      const phoneInput = document.getElementById('client-phone');
+      const phoneError = document.getElementById('phone-error');
+      const fallbackBtn = document.getElementById('book-action-btn');
+
+      const name = nameInput.value.trim();
+      const phone = phoneInput.value.trim();
+
+      const phoneFilled = phone.length > 0;
+      const validPhone = isPhoneValid(phone);
+
+      if (phoneFilled && !validPhone) {
+        phoneError.classList.add('visible');
+      } else {
+        phoneError.classList.remove('visible');
+      }
+
+      const isValid = (
+        selectedServiceIds.length > 0 &&
+        selectedBarber !== null &&
+        selectedDate !== null &&
+        selectedTime !== null &&
+        name.length > 0 &&
+        validPhone
+      );
+
+      if (fallbackBtn) {
+        fallbackBtn.disabled = !isValid;
+      }
+
+      updateTelegramMainButton(isValid);
+      return isValid;
+    }
+
+    function updateTelegramMainButton(isValid = null) {
+      if (!tg?.MainButton) return;
+      if (currentScreen !== 'booking') {
+        tg.MainButton.hide();
+        return;
+      }
+
+      if (isValid === null) {
+        isValid = validateBookingForm();
+      }
+
+      tg.MainButton.setText('Записаться');
+      tg.MainButton.show();
+      if (isValid) {
+        tg.MainButton.enable();
+      } else {
+        tg.MainButton.disable();
+      }
+      tg.MainButton.onClick(submitBooking);
+    }
+
+    function getBookings() {
+      try {
+        const stored = localStorage.getItem('boroda_bookings');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveBookings(items) {
+      try {
+        localStorage.setItem('boroda_bookings', JSON.stringify(items));
+      } catch (e) {}
+    }
+
+    function submitBooking() {
+      if (!validateBookingForm()) return;
+
+      triggerHaptic('notification', 'success');
+
+      const selectedServicesList = servicesData.filter(s => selectedServiceIds.includes(s.id));
+      const totalAmount = selectedServicesList.reduce((acc, curr) => acc + curr.price, 0);
+      const totalDuration = selectedServicesList.reduce((acc, curr) => acc + curr.duration, 0);
+      const name = document.getElementById('client-name').value.trim();
+      const phone = document.getElementById('client-phone').value.trim();
+      const comment = document.getElementById('client-comment').value.trim();
+
+      const bookingRecord = {
+        id: Date.now(),
+        barber: selectedBarber,
+        date: selectedDate,
+        time: selectedTime,
+        services: selectedServicesList.map(s => s.name),
+        totalAmount,
+        totalDuration,
+        name,
+        phone,
+        comment
+      };
+
+      const existing = getBookings();
+      existing.unshift(bookingRecord);
+      saveBookings(existing);
+
+      if (tg && typeof tg.sendData === 'function') {
+        try {
+          tg.sendData(JSON.stringify(bookingRecord));
+        } catch (e) {}
+      }
+
+      const modalDetails = document.getElementById('modal-details');
+      modalDetails.innerHTML = `
+        <strong>Барбер:</strong> ${bookingRecord.barber}<br>
+        <strong>Дата и время:</strong> ${bookingRecord.date}, ${bookingRecord.time}<br>
+        <strong>Услуги:</strong> ${bookingRecord.services.join(', ')}<br>
+        <strong>Итого:</strong> ${bookingRecord.totalAmount} ₽ (${bookingRecord.totalDuration} мин)<br>
+        <strong>Клиент:</strong> ${bookingRecord.name} (${bookingRecord.phone})<br>
+        ${bookingRecord.comment ? `<strong>Комментарий:</strong> ${bookingRecord.comment}` : ''}
+      `;
+      document.getElementById('confirm-modal').classList.add('active');
+    }
+
+    function closeConfirmModal() {
+      triggerHaptic('impact', 'light');
+      document.getElementById('confirm-modal').classList.remove('active');
+
+      selectedServiceIds = [];
+      selectedBarber = null;
+      selectedDate = null;
+      selectedTime = null;
+      document.getElementById('client-name').value = '';
+      document.getElementById('client-phone').value = '';
+      document.getElementById('client-comment').value = '';
+
+      document.querySelectorAll('.service-card').forEach(card => {
+        card.classList.remove('selected');
+        const btn = card.querySelector('.select-btn');
+        if (btn) btn.textContent = 'Выбрать';
+      });
+      document.getElementById('total-price').textContent = '0 ₽';
+      document.getElementById('total-time').textContent = '0 мин';
+
+      document.querySelectorAll('#barber-grid .grid-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#date-grid .grid-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#time-grid .grid-btn').forEach(b => b.classList.remove('active'));
+
+      validateBookingForm();
+      switchScreen('my-bookings');
+    }
+
+    function renderMyBookings() {
+      const container = document.getElementById('bookings-list');
+      const list = getBookings();
+      container.innerHTML = '';
+
+      if (list.length === 0) {
+        container.innerHTML = '<div class="empty-state">У вас пока нет активных записей</div>';
+        return;
+      }
+
+      list.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'booking-card';
+
+        const header = document.createElement('div');
+        header.className = 'booking-header';
+        header.innerHTML = `<span>${item.date} в ${item.time}</span><span>${item.totalAmount} ₽</span>`;
+        card.appendChild(header);
+
+        const details = document.createElement('div');
+        details.className = 'booking-detail';
+        details.textContent = `Барбер: ${item.barber} • ${item.services.join(', ')}`;
+        card.appendChild(details);
+
+        const meta = document.createElement('div');
+        meta.className = 'booking-meta';
+        meta.textContent = `Клиент: ${item.name} (${item.phone})${item.comment ? ' | ' + item.comment : ''}`;
+        card.appendChild(meta);
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'cancel-btn';
+        cancelBtn.textContent = 'Отменить запись'; // #ИНТЕРАКТИВ
+        cancelBtn.onclick = () => cancelBooking(item.id);
+        card.appendChild(cancelBtn);
+
+        container.appendChild(card);
+      });
+    }
+
+    function cancelBooking(id) {
+      triggerHaptic('notification', 'warning');
+      const confirmed = window.confirm('Вы действительно хотите отменить запись?');
+      if (confirmed) {
+        triggerHaptic('notification', 'success');
+        let list = getBookings();
+        list = list.filter(b => b.id !== id);
+        saveBookings(list);
+        renderMyBookings();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      buildNext7Days();
+      buildTimeSlots();
+      validateBookingForm();
+    });
+  </script>
+</body>
+</html>
