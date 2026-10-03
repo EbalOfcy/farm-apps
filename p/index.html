@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Барбершоп Борода</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: var(--tg-theme-bg-color, #17212b);
+      --text-color: var(--tg-theme-text-color, #f5f5f5);
+      --hint-color: var(--tg-theme-hint-color, #708499);
+      --link-color: var(--tg-theme-link-color, #6ab2f2);
+      --button-color: var(--tg-theme-button-color, #5288c1);
+      --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+      --secondary-bg-color: var(--tg-theme-secondary-bg-color, #232e3c);
+      --danger-color: #e53935;
+      --success-color: #43a047;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 74px;
+    }
+
+    header {
+      padding: 14px 16px;
+      background-color: var(--secondary-bg-color);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .screen {
+      display: none;
+      padding: 16px;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* Services list */
+    .services-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .service-card {
+      background-color: var(--secondary-bg-color);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .service-card.selected {
+      border-color: var(--button-color);
+    }
+
+    .service-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .service-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .service-meta {
+      font-size: 13px;
+      color: var(--hint-color);
+    }
+
+    .btn-select-service {
+      background-color: transparent;
+      color: var(--button-color);
+      border: 1px solid var(--button-color);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .service-card.selected .btn-select-service {
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+    }
+
+    .services-summary {
+      background-color: var(--secondary-bg-color);
+      padding: 14px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Booking options */
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--hint-color);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .pill-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .scroll-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: none;
+    }
+
+    .scroll-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .pill-btn {
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 68px;
+    }
+
+    .pill-btn.selected {
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      border-color: var(--button-color);
+    }
+
+    .pill-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      max-height: 190px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .slot-btn {
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 4px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .slot-btn.selected {
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      border-color: var(--button-color);
+    }
+
+    .slot-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .input-field {
+      width: 100%;
+      background-color: var(--secondary-bg-color);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text-color);
+      font-size: 15px;
+      outline: none;
+      user-select: text;
+    }
+
+    .input-field:focus {
+      border-color: var(--button-color);
+    }
+
+    .input-field.input-error {
+      border-color: var(--danger-color);
+    }
+
+    .error-hint {
+      color: var(--danger-color);
+      font-size: 12px;
+      display: none;
+      padding-left: 2px;
+    }
+
+    .error-hint.visible {
+      display: block;
+    }
+
+    /* Bookings list */
+    .bookings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .booking-card {
+      background-color: var(--secondary-bg-color);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .booking-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .booking-detail {
+      font-size: 13px;
+      color: var(--hint-color);
+      line-height: 1.4;
+    }
+
+    .btn-cancel-booking {
+      align-self: flex-start;
+      background-color: transparent;
+      color: var(--danger-color);
+      border: 1px solid var(--danger-color);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .empty-placeholder {
+      text-align: center;
+      color: var(--hint-color);
+      padding: 40px 16px;
+      font-size: 14px;
+    }
+
+    /* Bottom Tab Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background-color: var(--secondary-bg-color);
+      display: flex;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 100;
+    }
+
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--hint-color);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      color: var(--link-color);
+      font-weight: 600;
+    }
+
+    /* Confirmation Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(2px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background-color: var(--bg-color);
+      border-radius: 16px;
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .modal-body {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-color);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal-btn-primary {
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+    }
+
+    .modal-btn-cancel {
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+    }
+
+    .modal-btn-danger {
+      background-color: var(--danger-color);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="headerTitle">Барбершоп «Борода»</h1>
+  </header>
+
+  <!-- SCREEN 1: SERVICES -->
+  <main id="screenServices" class="screen active">
+    <div class="services-list" id="servicesContainer"></div>
+    <div class="services-summary">
+      <span id="summaryTime">Время: 0 мин</span>
+      <span id="summaryTotal">Итого: 0 ₽</span>
+    </div>
+  </main>
+
+  <!-- SCREEN 2: BOOKING -->
+  <main id="screenBooking" class="screen">
+    <div>
+      <div class="section-title">Барбер</div>
+      <div class="pill-group" id="barbersContainer"></div>
+    </div>
+
+    <div>
+      <div class="section-title">Дата</div>
+      <div class="scroll-row" id="datesContainer"></div>
+    </div>
+
+    <div>
+      <div class="section-title">Время</div>
+      <div class="slots-grid" id="slotsContainer"></div>
+    </div>
+
+    <div class="form-group">
+      <div class="section-title">Контактные данные</div>
+      <input type="text" id="inputName" class="input-field" placeholder="Ваше имя"> <!-- #ИНТЕРАКТИВ #ВВОД=БУКВЫ:6 -->
+      <input type="tel" id="inputPhone" class="input-field" placeholder="Телефон (+7XXXXXXXXXX)"> <!-- #ИНТЕРАКТИВ #ВВОД=ТОЧНО:+79991234567 -->
+      <div class="error-hint" id="phoneError">Введите номер в формате +7 (XXX) XXX-XX-XX (11 цифр)</div>
+      <textarea id="inputComment" class="input-field" rows="2" placeholder="Комментарий к записи"></textarea> <!-- #ИНТЕРАКТИВ #ВВОД=БУКВЫ:ЛЮБОЕ -->
+    </div>
+  </main>
+
+  <!-- SCREEN 3: MY BOOKINGS -->
+  <main id="screenMyBookings" class="screen">
+    <div class="bookings-list" id="myBookingsContainer"></div>
+  </main>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="tab-btn active" id="tabServices">Услуги</button> <!-- #ИНТЕРАКТИВ #ВКЛАДКА -->
+    <button class="tab-btn" id="tabBooking">Запись</button> <!-- #ИНТЕРАКТИВ #ВКЛАДКА -->
+    <button class="tab-btn" id="tabMyBookings">Мои записи</button> <!-- #ИНТЕРАКТИВ #ВКЛАДКА -->
+  </nav>
+
+  <!-- CONFIRMATION / SUCCESS MODAL -->
+  <div class="modal-backdrop" id="bookingSuccessModal">
+    <div class="modal-card">
+      <div class="modal-title">Запись оформлена!</div>
+      <div class="modal-body" id="successModalContent"></div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-primary" id="btnDone">Готово</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+    </div>
+  </div>
+
+  <!-- CANCELLATION MODAL -->
+  <div class="modal-backdrop" id="cancelConfirmModal">
+    <div class="modal-card">
+      <div class="modal-title">Отмена записи</div>
+      <div class="modal-body">Вы уверены, что хотите отменить эту запись в барбершоп?</div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" id="btnCancelDismiss">Назад</button> <!-- #ИНТЕРАКТИВ -->
+        <button class="modal-btn modal-btn-danger" id="btnCancelProceed">Отменить</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Telegram WebApp Initialization
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    function triggerHaptic(type = 'light') {
+      if (tg && tg.HapticFeedback) {
+        if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+        else if (type === 'warning') tg.HapticFeedback.notificationOccurred('warning');
+        else tg.HapticFeedback.impactOccurred(type);
+      }
+    }
+
+    // 2. Application State & Data
+    const SERVICES = [
+      { id: 's1', name: "Мужская стрижка", price: 1500, duration: 45 },
+      { id: 's2', name: "Стрижка машинкой", price: 900, duration: 30 },
+      { id: 's3', name: "Стрижка бороды", price: 800, duration: 30 },
+      { id: 's4', name: "Стрижка + борода", price: 2100, duration: 75 },
+      { id: 's5', name: "Детская стрижка", price: 1000, duration: 30 },
+      { id: 's6', name: "Камуфляж седины", price: 1200, duration: 40 }
+    ];
+
+    const BARBERS = [
+      { id: 'b1', name: "Артём" },
+      { id: 'b2', name: "Денис" },
+      { id: 'b3', name: "Игорь" }
+    ];
+
+    const appState = {
+      selectedServiceIds: new Set(),
+      selectedBarber: null,
+      selectedDate: null,
+      selectedSlot: null,
+      name: '',
+      phone: '',
+      comment: '',
+      currentScreen: 'services',
+      myBookings: [],
+      pendingCancelIndex: null,
+      lastConfirmedBooking: null
+    };
+
+    // 3. Helper Functions
+    function generateNext7Days() {
+      const days = [];
+      const now = new Date();
+      const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+      const weekDays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(now.getDate() + i);
+        const dayStr = `${d.getDate()} ${months[d.getMonth()]}`;
+        const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        days.push({
+          key: dayKey,
+          label: `${d.getDate()} ${months[d.getMonth()]}`,
+          dayOfWeek: i === 0 ? 'Сегодня' : weekDays[d.getDay()],
+          textNode: `${d.getDate()} ${months[d.getMonth()]}`
+        });
+      }
+      return days;
+    }
+
+    const NEXT_7_DAYS = generateNext7Days();
+
+    function generateSlots() {
+      const slots = [];
+      for (let h = 10; h <= 20; h++) {
+        slots.push(`${String(h).padStart(2, '0')}:00`);
+        if (h !== 20) slots.push(`${String(h).padStart(2, '0')}:30`);
+      }
+      return slots;
+    }
+
+    const TIME_SLOTS = generateSlots();
+    const BUSY_SLOTS = new Set(['11:30', '13:00', '15:30', '18:00']);
+
+    function validatePhone(phone) {
+      const cleaned = phone.replace(/[^\d+]/g, '');
+      const digitsOnly = cleaned.replace(/\D/g, '');
+      return digitsOnly.length === 11 && (cleaned.startsWith('+7') || cleaned.startsWith('8') || cleaned.startsWith('7'));
+    }
+
+    function checkBookingValidity() {
+      const hasServices = appState.selectedServiceIds.size > 0;
+      const hasBarber = Boolean(appState.selectedBarber);
+      const hasDate = Boolean(appState.selectedDate);
+      const hasSlot = Boolean(appState.selectedSlot);
+      const hasName = appState.name.trim().length > 0;
+      const isPhoneValid = validatePhone(appState.phone);
+      return hasServices && hasBarber && hasDate && hasSlot && hasName && isPhoneValid;
+    }
+
+    function updateMainButton() {
+      if (!tg) return;
+      if (appState.currentScreen === 'booking') {
+        tg.MainButton.setText('ЗАПИСАТЬСЯ');
+        if (checkBookingValidity()) {
+          tg.MainButton.enable();
+          tg.MainButton.show();
+        } else {
+          tg.MainButton.disable();
+          tg.MainButton.show();
+        }
+      } else {
+        tg.MainButton.hide();
+      }
+    }
+
+    // 4. Render Components
+    function renderServices() {
+      const container = document.getElementById('servicesContainer');
+      container.innerHTML = '';
+
+      SERVICES.forEach(service => {
+        const isSelected = appState.selectedServiceIds.has(service.id);
+        const card = document.createElement('div');
+        card.className = `service-card ${isSelected ? 'selected' : ''}`;
+
+        const info = document.createElement('div');
+        info.className = 'service-info';
+        info.innerHTML = `
+          <div class="service-title">${service.name}</div>
+          <div class="service-meta">${service.price} ₽ • ${service.duration} мин</div>
+        `;
+
+        const btn = document.createElement('button');
+        btn.className = 'btn-select-service';
+        btn.textContent = isSelected ? 'Выбрано' : 'Выбрать'; // #ИНТЕРАКТИВ #НАДПИСЬ=Выбрать
+        btn.onclick = () => {
+          triggerHaptic('selection');
+          if (appState.selectedServiceIds.has(service.id)) {
+            appState.selectedServiceIds.delete(service.id);
+          } else {
+            appState.selectedServiceIds.add(service.id);
+          }
+          renderServices();
+          updateSummary();
+          updateMainButton();
+        };
+
+        card.appendChild(info);
+        card.appendChild(btn);
+        container.appendChild(card);
+      });
+    }
+
+    function updateSummary() {
+      let totalAmount = 0;
+      let totalTime = 0;
+      SERVICES.forEach(s => {
+        if (appState.selectedServiceIds.has(s.id)) {
+          totalAmount += s.price;
+          totalTime += s.duration;
+        }
+      });
+      document.getElementById('summaryTotal').textContent = `Итого: ${totalAmount} ₽`;
+      document.getElementById('summaryTime').textContent = `Время: ${totalTime} мин`;
+    }
+
+    function renderBarbers() {
+      const container = document.getElementById('barbersContainer');
+      container.innerHTML = '';
+      BARBERS.forEach(barber => {
+        const btn = document.createElement('button');
+        btn.className = `pill-btn ${appState.selectedBarber === barber.name ? 'selected' : ''}`;
+        btn.textContent = barber.name; // #ИНТЕРАКТИВ #НАДПИСЬ=Артём
+        btn.onclick = () => {
+          triggerHaptic('selection');
+          appState.selectedBarber = barber.name;
+          renderBarbers();
+          updateMainButton();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function renderDates() {
+      const container = document.getElementById('datesContainer');
+      container.innerHTML = '';
+      NEXT_7_DAYS.forEach((item, index) => {
+        const btn = document.createElement('button');
+        btn.className = `pill-btn ${appState.selectedDate === item.label ? 'selected' : ''}`;
+        btn.innerHTML = `<span style="font-size:11px;opacity:0.7">${item.dayOfWeek}</span><span>${item.label}</span>`;
+        btn.onclick = () => {
+          triggerHaptic('selection');
+          appState.selectedDate = item.label;
+          renderDates();
+          updateMainButton();
+        };
+        if (index === 0) {
+          btn.textContent = item.label; // #ИНТЕРАКТИВ #НАДПИСЬ=12 мар #ОКНО
+          btn.innerHTML = `<span style="font-size:11px;opacity:0.7">${item.dayOfWeek}</span><span>${item.label}</span>`;
+        } else {
+          // #ИНТЕРАКТИВ
+        }
+        container.appendChild(btn);
+      });
+    }
+
+    function renderSlots() {
+      const container = document.getElementById('slotsContainer');
+      container.innerHTML = '';
+      TIME_SLOTS.forEach(slot => {
+        const isBusy = BUSY_SLOTS.has(slot);
+        const btn = document.createElement('button');
+        btn.className = `slot-btn ${appState.selectedSlot === slot ? 'selected' : ''}`;
+        btn.textContent = slot; // #ИНТЕРАКТИВ #НАДПИСЬ=10:00 #ОКНО
+        if (isBusy) {
+          btn.disabled = true;
+        } else {
+          btn.onclick = () => {
+            triggerHaptic('selection');
+            appState.selectedSlot = slot;
+            renderSlots();
+            updateMainButton();
+          };
+        }
+        container.appendChild(btn);
+      });
+    }
+
+    function renderMyBookings() {
+      const container = document.getElementById('myBookingsContainer');
+      container.innerHTML = '';
+      if (appState.myBookings.length === 0) {
+        container.innerHTML = '<div class="empty-placeholder">У вас пока нет активных записей</div>';
+        return;
+      }
+
+      appState.myBookings.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'booking-card';
+
+        const header = document.createElement('div');
+        header.className = 'booking-header';
+        header.innerHTML = `<span>${item.date} в ${item.time}</span><span>${item.totalAmount} ₽</span>`;
+
+        const details = document.createElement('div');
+        details.className = 'booking-detail';
+        details.innerHTML = `
+          <div><strong>Барбер:</strong> ${item.barber}</div>
+          <div><strong>Услуги:</strong> ${item.services.join(', ')}</div>
+          <div><strong>Имя:</strong> ${item.name} (${item.phone})</div>
+          ${item.comment ? `<div><strong>Комментарий:</strong> ${item.comment}</div>` : ''}
+        `;
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn-cancel-booking';
+        cancelBtn.textContent = 'Отменить'; // #ИНТЕРАКТИВ #НАДПИСЬ=Отменить
+        cancelBtn.onclick = () => {
+          triggerHaptic('warning');
+          appState.pendingCancelIndex = index;
+          document.getElementById('cancelConfirmModal').classList.add('active');
+        };
+
+        card.appendChild(header);
+        card.appendChild(details);
+        card.appendChild(cancelBtn);
+        container.appendChild(card);
+      });
+    }
+
+    // 5. Navigation & Screen Management
+    function switchScreen(screenName) {
+      triggerHaptic('selection');
+      appState.currentScreen = screenName;
+
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+
+      if (screenName === 'services') {
+        document.getElementById('screenServices').classList.add('active');
+        document.getElementById('tabServices').classList.add('active');
+        if (tg && tg.BackButton) tg.BackButton.hide();
+      } else if (screenName === 'booking') {
+        document.getElementById('screenBooking').classList.add('active');
+        document.getElementById('tabBooking').classList.add('active');
+        if (tg && tg.BackButton) {
+          tg.BackButton.show();
+          tg.BackButton.onClick(() => switchScreen('services'));
+        }
+      } else if (screenName === 'myBookings') {
+        document.getElementById('screenMyBookings').classList.add('active');
+        document.getElementById('tabMyBookings').classList.add('active');
+        renderMyBookings();
+        if (tg && tg.BackButton) {
+          tg.BackButton.show();
+          tg.BackButton.onClick(() => switchScreen('services'));
+        }
+      }
+
+      updateMainButton();
+    }
+
+    // 6. Booking Actions
+    function confirmBooking() {
+      if (!checkBookingValidity()) return;
+
+      const selectedServicesList = SERVICES.filter(s => appState.selectedServiceIds.has(s.id));
+      const totalAmount = selectedServicesList.reduce((acc, cur) => acc + cur.price, 0);
+      const totalDuration = selectedServicesList.reduce((acc, cur) => acc + cur.duration, 0);
+
+      const bookingRecord = {
+        barber: appState.selectedBarber,
+        date: appState.selectedDate,
+        time: appState.selectedSlot,
+        name: appState.name.trim(),
+        phone: appState.phone.trim(),
+        comment: appState.comment.trim(),
+        services: selectedServicesList.map(s => s.name),
+        totalAmount: totalAmount,
+        totalDuration: totalDuration,
+        timestamp: new Date().toISOString()
+      };
+
+      appState.myBookings.unshift(bookingRecord);
+      appState.lastConfirmedBooking = bookingRecord;
+
+      const modalBody = document.getElementById('successModalContent');
+      modalBody.innerHTML = `
+        <p style="margin-bottom: 6px;"><strong>Барбер:</strong> ${bookingRecord.barber}</p>
+        <p style="margin-bottom: 6px;"><strong>Дата и время:</strong> ${bookingRecord.date}, ${bookingRecord.time}</p>
+        <p style="margin-bottom: 6px;"><strong>Услуги:</strong> ${bookingRecord.services.join(', ')}</p>
+        <p style="margin-bottom: 6px;"><strong>Длительность:</strong> ${bookingRecord.totalDuration} мин</p>
+        <p style="margin-bottom: 6px;"><strong>Итого:</strong> ${bookingRecord.totalAmount} ₽</p>
+        <p><strong>Клиент:</strong> ${bookingRecord.name} (${bookingRecord.phone})</p>
+      `;
+
+      triggerHaptic('success');
+      document.getElementById('bookingSuccessModal').classList.add('active');
+
+      if (tg) tg.MainButton.hide();
+    }
+
+    // 7. Event Handlers
+    document.getElementById('tabServices').onclick = () => switchScreen('services');
+    document.getElementById('tabBooking').onclick = () => switchScreen('booking');
+    document.getElementById('tabMyBookings').onclick = () => switchScreen('myBookings');
+
+    const inputName = document.getElementById('inputName');
+    inputName.oninput = (e) => {
+      appState.name = e.target.value;
+      updateMainButton();
+    };
+
+    const inputPhone = document.getElementById('inputPhone');
+    const phoneError = document.getElementById('phoneError');
+    inputPhone.oninput = (e) => {
+      appState.phone = e.target.value;
+      if (appState.phone.length > 3 && !validatePhone(appState.phone)) {
+        phoneError.classList.add('visible');
+        inputPhone.classList.add('input-error');
+      } else {
+        phoneError.classList.remove('visible');
+        inputPhone.classList.remove('input-error');
+      }
+      updateMainButton();
+    };
+
+    const inputComment = document.getElementById('inputComment');
+    inputComment.oninput = (e) => {
+      appState.comment = e.target.value;
+    };
+
+    // Modal buttons
+    document.getElementById('btnDone').onclick = () => {
+      triggerHaptic('light');
+      document.getElementById('bookingSuccessModal').classList.remove('active');
+
+      // Send data to Telegram Bot
+      if (tg && appState.lastConfirmedBooking) {
+        tg.sendData(JSON.stringify(appState.lastConfirmedBooking));
+      }
+
+      // Reset booking inputs
+      appState.selectedServiceIds.clear();
+      appState.selectedBarber = null;
+      appState.selectedDate = null;
+      appState.selectedSlot = null;
+      appState.name = '';
+      appState.phone = '';
+      appState.comment = '';
+      inputName.value = '';
+      inputPhone.value = '';
+      inputComment.value = '';
+
+      renderServices();
+      updateSummary();
+      renderBarbers();
+      renderDates();
+      renderSlots();
+
+      switchScreen('myBookings');
+    };
+
+    document.getElementById('btnCancelDismiss').onclick = () => {
+      triggerHaptic('light');
+      appState.pendingCancelIndex = null;
+      document.getElementById('cancelConfirmModal').classList.remove('active');
+    };
+
+    document.getElementById('btnCancelProceed').onclick = () => {
+      triggerHaptic('warning');
+      if (appState.pendingCancelIndex !== null) {
+        appState.myBookings.splice(appState.pendingCancelIndex, 1);
+        appState.pendingCancelIndex = null;
+      }
+      document.getElementById('cancelConfirmModal').classList.remove('active');
+      renderMyBookings();
+    };
+
+    if (tg) {
+      tg.MainButton.onClick(confirmBooking);
+    }
+
+    // Initial setup
+    renderServices();
+    updateSummary();
+    renderBarbers();
+    renderDates();
+    renderSlots();
+    updateMainButton();
+  </script>
+</body>
+</html>
