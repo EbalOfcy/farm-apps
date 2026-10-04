@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Барбершоп Борода</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: var(--tg-theme-bg-color, #ffffff);
+      --text-color: var(--tg-theme-text-color, #222222);
+      --hint-color: var(--tg-theme-hint-color, #8e8e93);
+      --link-color: var(--tg-theme-link-color, #2481cc);
+      --button-color: var(--tg-theme-button-color, #2481cc);
+      --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+      --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
+      --danger-color: #e53935;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 72px;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 16px;
+      text-align: center;
+      background-color: var(--secondary-bg-color);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    header p {
+      font-size: 13px;
+      color: var(--hint-color);
+      margin-top: 2px;
+    }
+
+    .screen {
+      display: none;
+      padding: 16px;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--hint-color);
+      margin-bottom: 8px;
+    }
+
+    .card {
+      background-color: var(--secondary-bg-color);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Services Screen */
+    .service-card {
+      background-color: var(--secondary-bg-color);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+
+    .service-card.selected {
+      border-color: var(--button-color);
+      background-color: var(--secondary-bg-color);
+    }
+
+    .service-info {
+      flex: 1;
+      padding-right: 12px;
+    }
+
+    .service-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .service-meta {
+      font-size: 14px;
+      color: var(--hint-color);
+    }
+
+    .btn-select {
+      background-color: var(--bg-color);
+      color: var(--button-color);
+      border: 1px solid var(--button-color);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      min-width: 86px;
+      text-align: center;
+    }
+
+    .service-card.selected .btn-select {
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+    }
+
+    .services-summary {
+      background-color: var(--secondary-bg-color);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 15px;
+      margin-top: 8px;
+    }
+
+    /* Booking Screen */
+    .button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill-btn {
+      flex: 1;
+      min-width: 90px;
+      padding: 12px 8px;
+      background-color: var(--secondary-bg-color);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      color: var(--text-color);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .pill-btn.selected {
+      border-color: var(--button-color);
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+    }
+
+    .date-scroll-container {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .date-btn {
+      flex: 0 0 calc(28% - 6px);
+      padding: 10px 4px;
+      background-color: var(--secondary-bg-color);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-color);
+      text-align: center;
+    }
+
+    .date-btn span.day-name {
+      font-size: 12px;
+      color: var(--hint-color);
+      margin-bottom: 2px;
+    }
+
+    .date-btn.selected span.day-name {
+      color: var(--button-text-color);
+    }
+
+    .date-btn span.day-val {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .date-btn.selected {
+      border-color: var(--button-color);
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .slot-btn {
+      padding: 10px 0;
+      background-color: var(--secondary-bg-color);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-color);
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .slot-btn.selected {
+      border-color: var(--button-color);
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+    }
+
+    .slot-btn.disabled {
+      opacity: 0.35;
+      background-color: var(--secondary-bg-color);
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      font-size: 15px;
+      outline: none;
+      user-select: text;
+    }
+
+    .form-input:focus {
+      border-color: var(--button-color);
+    }
+
+    .error-msg {
+      font-size: 12px;
+      color: var(--danger-color);
+      display: none;
+      padding-left: 4px;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+    /* Confirmation Modal / Screen */
+    .confirmation-view {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--bg-color);
+      z-index: 100;
+      padding: 24px 16px;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .confirmation-view.active {
+      display: flex;
+    }
+
+    .conf-details {
+      background-color: var(--secondary-bg-color);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .conf-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+
+    .conf-row .label {
+      color: var(--hint-color);
+    }
+
+    .conf-row .value {
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .btn-action {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    /* My Bookings Screen */
+    .booking-item {
+      background-color: var(--secondary-bg-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-cancel {
+      align-self: flex-start;
+      background-color: transparent;
+      color: var(--danger-color);
+      border: 1px solid var(--danger-color);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--hint-color);
+      padding: 40px 16px;
+      font-size: 15px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background-color: var(--bg-color);
+      border-radius: 16px;
+      padding: 20px;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .modal-btn-cancel {
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+    }
+
+    .modal-btn-confirm {
+      background-color: var(--danger-color);
+      color: #ffffff;
+    }
+
+    /* Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background-color: var(--bg-color);
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      display: flex;
+      z-index: 90;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--hint-color);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--button-color);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Борода</h1>
+    <p>Мужская парикмахерская</p>
+  </header>
+
+  <!-- Screen 1: Services -->
+  <section id="screen-services" class="screen active">
+    <div class="section-title">Выберите услуги</div>
+
+    <div class="service-card" id="service-1">
+      <div class="service-info">
+        <div class="service-title">Мужская стрижка</div>
+        <div class="service-meta">1500 ₽ • 45 мин</div>
+      </div>
+      <button class="btn-select" id="btn-srv-1">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+    </div>
+
+    <div class="service-card" id="service-2">
+      <div class="service-info">
+        <div class="service-title">Стрижка машинкой</div>
+        <div class="service-meta">900 ₽ • 30 мин</div>
+      </div>
+      <button class="btn-select" id="btn-srv-2">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+    </div>
+
+    <div class="service-card" id="service-3">
+      <div class="service-info">
+        <div class="service-title">Моделирование бороды</div>
+        <div class="service-meta">800 ₽ • 30 мин</div>
+      </div>
+      <button class="btn-select" id="btn-srv-3">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+    </div>
+
+    <div class="service-card" id="service-4">
+      <div class="service-info">
+        <div class="service-title">Стрижка + борода</div>
+        <div class="service-meta">2100 ₽ • 75 мин</div>
+      </div>
+      <button class="btn-select" id="btn-srv-4">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+    </div>
+
+    <div class="service-card" id="service-5">
+      <div class="service-info">
+        <div class="service-title">Детская стрижка</div>
+        <div class="service-meta">1000 ₽ • 30 мин</div>
+      </div>
+      <button class="btn-select" id="btn-srv-5">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+    </div>
+
+    <div class="service-card" id="service-6">
+      <div class="service-info">
+        <div class="service-title">Камуфляж седины</div>
+        <div class="service-meta">1200 ₽ • 40 мин</div>
+      </div>
+      <button class="btn-select" id="btn-srv-6">Выбрать</button> <!-- #ИНТЕРАКТИВ -->
+    </div>
+
+    <div class="services-summary">
+      <span>Итого: <span id="total-time">0 мин</span></span>
+      <span id="total-price">0 ₽</span>
+    </div>
+  </section>
+
+  <!-- Screen 2: Booking -->
+  <section id="screen-booking" class="screen">
+    <div>
+      <div class="section-title">Барбер</div>
+      <div class="button-row">
+        <button class="pill-btn" id="barber-artyom">Артём</button> <!-- #ИНТЕРАКТИВ -->
+        <button class="pill-btn" id="barber-denis">Денис</button> <!-- #ИНТЕРАКТИВ -->
+        <button class="pill-btn" id="barber-igor">Игорь</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">Дата</div>
+      <div class="date-scroll-container" id="dates-container"></div>
+    </div>
+
+    <div>
+      <div class="section-title">Время</div>
+      <div class="slots-grid" id="slots-container"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" style="margin-bottom:0;">Данные клиента</div>
+      <div class="form-group">
+        <input type="text" id="client-name" class="form-input" placeholder="Ваше имя"> <!-- #ИНТЕРАКТИВ #ВВОД=БУКВЫ:6 -->
+      </div>
+      <div class="form-group">
+        <input type="tel" id="client-phone" class="form-input" placeholder="Номер телефона"> <!-- #ИНТЕРАКТИВ #ВВОД=ЦИФРЫ:11 -->
+        <div class="error-msg" id="phone-error">Введите корректный номер (10-11 цифр)</div>
+      </div>
+      <div class="form-group">
+        <input type="text" id="client-comment" class="form-input" placeholder="Комментарий к записи"> <!-- #ИНТЕРАКТИВ #ВВОД=БУКВЫ:ЛЮБОЕ -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 3: My Bookings -->
+  <section id="screen-my-bookings" class="screen">
+    <div class="section-title">История и активные записи</div>
+    <div id="bookings-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+  </section>
+
+  <!-- Confirmation Screen -->
+  <div id="confirmation-view" class="confirmation-view">
+    <div>
+      <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 8px;">Запись подтверждена!</h2>
+      <p style="color: var(--hint-color); font-size: 14px; margin-bottom: 20px;">Ждем вас в барбершопе «Борода»</p>
+      
+      <div class="conf-details" id="conf-details-content"></div>
+    </div>
+    <button class="btn-action" id="btn-conf-done">Готово</button> <!-- #ИНТЕРАКТИВ -->
+  </div>
+
+  <!-- In-app Cancellation Modal -->
+  <div class="modal-overlay" id="cancel-modal">
+    <div class="modal-box">
+      <h3 style="font-size: 18px; font-weight: 600;">Отмена записи</h3>
+      <p style="font-size: 14px; color: var(--hint-color);">Вы действительно хотите отменить эту запись?</p>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" id="btn-modal-keep">Назад</button> <!-- #ИНТЕРАКТИВ -->
+        <button class="modal-btn modal-btn-confirm" id="btn-modal-confirm">Отменить</button> <!-- #ИНТЕРАКТИВ -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="tab-services">Услуги</button> <!-- #ИНТЕРАКТИВ #ВКЛАДКА -->
+    <button class="nav-item" id="tab-booking">Запись</button> <!-- #ИНТЕРАКТИВ #ВКЛАДКА -->
+    <button class="nav-item" id="tab-my-bookings">Мои записи</button> <!-- #ИНТЕРАКТИВ #ВКЛАДКА -->
+  </nav>
+
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    const state = {
+      currentScreen: 'services',
+      services: [
+        { id: 1, title: "Мужская стрижка", price: 1500, time: 45, selected: false },
+        { id: 2, title: "Стрижка машинкой", price: 900, time: 30, selected: false },
+        { id: 3, title: "Моделирование бороды", price: 800, time: 30, selected: false },
+        { id: 4, title: "Стрижка + борода", price: 2100, time: 75, selected: false },
+        { id: 5, title: "Детская стрижка", price: 1000, time: 30, selected: false },
+        { id: 6, title: "Камуфляж седины", price: 1200, time: 40, selected: false }
+      ],
+      selectedBarber: '',
+      selectedDate: '',
+      selectedSlot: '',
+      clientName: '',
+      clientPhone: '',
+      clientComment: '',
+      bookedItems: [],
+      bookingToCancelId: null
+    };
+
+    const timeSlots = [
+      "10:00", "10:30", "11:00", "11:30", "12:00", "12:30",
+      "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
+      "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
+      "19:00", "19:30", "20:00"
+    ];
+
+    const takenSlots = {
+      "10:30": true,
+      "13:00": true,
+      "16:30": true,
+      "18:00": true
+    };
+
+    function hapticImpact(style) {
+      if (tg && tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred(style);
+      }
+    }
+
+    function hapticSelection() {
+      if (tg && tg.HapticFeedback) {
+        tg.HapticFeedback.selectionChanged();
+      }
+    }
+
+    function hapticNotification(type) {
+      if (tg && tg.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred(type);
+      }
+    }
+
+    function updateServicesSummary() {
+      const selected = state.services.filter(s => s.selected);
+      const totalPrice = selected.reduce((sum, s) => sum + s.price, 0);
+      const totalTime = selected.reduce((sum, s) => sum + s.time, 0);
+      document.getElementById('total-price').textContent = totalPrice + ' ₽';
+      document.getElementById('total-time').textContent = totalTime + ' мин';
+      checkBookingValidity();
+    }
+
+    function toggleService(id) {
+      hapticSelection();
+      const s = state.services.find(item => item.id === id);
+      if (s) {
+        s.selected = !s.selected;
+        const card = document.getElementById('service-' + id);
+        const btn = document.getElementById('btn-srv-' + id);
+        if (s.selected) {
+          card.classList.add('selected');
+          btn.textContent = 'Выбрано';
+        } else {
+          card.classList.remove('selected');
+          btn.textContent = 'Выбрать';
+        }
+        updateServicesSummary();
+      }
+    }
+
+    for (let i = 1; i <= 6; i++) {
+      const btn = document.getElementById('btn-srv-' + i);
+      if (btn) {
+        btn.addEventListener('click', function() {
+          toggleService(i);
+        });
+      }
+    }
+
+    // Barbers
+    const barbers = [
+      { id: 'barber-artyom', name: 'Артём' },
+      { id: 'barber-denis', name: 'Денис' },
+      { id: 'barber-igor', name: 'Игорь' }
+    ];
+
+    barbers.forEach(b => {
+      const el = document.getElementById(b.id);
+      if (el) {
+        el.addEventListener('click', () => {
+          hapticSelection();
+          state.selectedBarber = b.name;
+          barbers.forEach(item => {
+            const btnEl = document.getElementById(item.id);
+            if (btnEl) btnEl.classList.remove('selected');
+          });
+          el.classList.add('selected');
+          checkBookingValidity();
+        });
+      }
+    });
+
+    // Dates Generation for next 7 days
+    function initDates() {
+      const container = document.getElementById('dates-container');
+      container.innerHTML = '';
+      const daysNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+      const today = new Date();
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+
+        let fixedWord = '';
+        if (i === 0) fixedWord = 'Сегодня';
+        else if (i === 1) fixedWord = 'Завтра';
+        else fixedWord = daysNames[d.getDay()];
+
+        const dateStr = d.getDate() + ' ' + months[d.getMonth()];
+        const fullDateVal = fixedWord + ', ' + dateStr;
+
+        const dateBtn = document.createElement('button');
+        dateBtn.className = 'date-btn';
+        dateBtn.innerHTML = '<span class="day-name">' + fixedWord + '</span><span class="day-val">' + d.getDate() + '</span>';
+        dateBtn.textContent = fixedWord; // #ИНТЕРАКТИВ #НАДПИСЬ=Сегодня|Завтра|Пн|Вт|Ср|Чт|Пт|Сб #ОКНО
+
+        dateBtn.addEventListener('click', () => {
+          hapticSelection();
+          state.selectedDate = fullDateVal;
+          document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('selected'));
+          dateBtn.classList.add('selected');
+          checkBookingValidity();
+        });
+
+        container.appendChild(dateBtn);
+      }
+    }
+
+    // Time Slots
+    function initSlots() {
+      const container = document.getElementById('slots-container');
+      container.innerHTML = '';
+      timeSlots.forEach(slot => {
+        const isTaken = takenSlots[slot];
+        const btn = document.createElement('button');
+        btn.className = 'slot-btn' + (isTaken ? ' disabled' : '');
+        btn.textContent = slot; // #ИНТЕРАКТИВ #НАДПИСЬ=10:00|10:30|11:00|11:30|12:00|12:30|13:00|13:30|14:00|14:30|15:00|15:30|16:00|16:30|17:00|17:30|18:00|18:30|19:00|19:30|20:00
+        if (!isTaken) {
+          btn.addEventListener('click', () => {
+            hapticSelection();
+            state.selectedSlot = slot;
+            document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            checkBookingValidity();
+          });
+        }
+        container.appendChild(btn);
+      });
+    }
+
+    // Phone Validation
+    function isValidPhone(phone) {
+      const clean = phone.replace(/\D/g, '');
+      return clean.length >= 10 && clean.length <= 11;
+    }
+
+    const nameInput = document.getElementById('client-name');
+    const phoneInput = document.getElementById('client-phone');
+    const commentInput = document.getElementById('client-comment');
+    const phoneError = document.getElementById('phone-error');
+
+    nameInput.addEventListener('input', (e) => {
+      state.clientName = e.target.value.trim();
+      checkBookingValidity();
+    });
+
+    phoneInput.addEventListener('input', (e) => {
+      state.clientPhone = e.target.value.trim();
+      if (state.clientPhone.length > 0 && !isValidPhone(state.clientPhone)) {
+        phoneError.classList.add('visible');
+      } else {
+        phoneError.classList.remove('visible');
+      }
+      checkBookingValidity();
+    });
+
+    commentInput.addEventListener('input', (e) => {
+      state.clientComment = e.target.value.trim();
+    });
+
+    function checkBookingValidity() {
+      const hasServices = state.services.some(s => s.selected);
+      const hasBarber = !!state.selectedBarber;
+      const hasDate = !!state.selectedDate;
+      const hasSlot = !!state.selectedSlot;
+      const hasName = state.clientName.length > 0;
+      const hasValidPhone = isValidPhone(state.clientPhone);
+
+      const isValid = hasServices && hasBarber && hasDate && hasSlot && hasName && hasValidPhone;
+
+      if (tg && tg.MainButton) {
+        if (state.currentScreen === 'booking') {
+          tg.MainButton.setText('Записаться'); // #ИНТЕРАКТИВ #НАДПИСЬ=Записаться
+          tg.MainButton.show();
+          if (isValid) {
+            tg.MainButton.enable();
+          } else {
+            tg.MainButton.disable();
+          }
+        } else {
+          tg.MainButton.hide();
+        }
+      }
+      return isValid;
+    }
+
+    function switchScreen(screenName) {
+      hapticSelection();
+      state.currentScreen = screenName;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      const activeScreen = document.getElementById('screen-' + screenName);
+      if (activeScreen) activeScreen.classList.add('active');
+
+      const activeNav = document.getElementById('tab-' + screenName);
+      if (activeNav) activeNav.classList.add('active');
+
+      if (tg && tg.BackButton) {
+        if (screenName !== 'services') {
+          tg.BackButton.show();
+        } else {
+          tg.BackButton.hide();
+        }
+      }
+
+      checkBookingValidity();
+      if (screenName === 'my-bookings') {
+        renderMyBookings();
+      }
+    }
+
+    if (tg && tg.BackButton) {
+      tg.BackButton.onClick(() => {
+        hapticImpact('light');
+        switchScreen('services');
+      });
+    }
+
+    document.getElementById('tab-services').addEventListener('click', () => switchScreen('services'));
+    document.getElementById('tab-booking').addEventListener('click', () => switchScreen('booking'));
+    document.getElementById('tab-my-bookings').addEventListener('click', () => switchScreen('my-bookings'));
+
+    function completeBooking() {
+      if (!checkBookingValidity()) return;
+      hapticNotification('success');
+
+      const selectedServices = state.services.filter(s => s.selected);
+      const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
+      const totalTime = selectedServices.reduce((sum, s) => sum + s.time, 0);
+
+      const bookingRecord = {
+        id: Date.now(),
+        barber: state.selectedBarber,
+        date: state.selectedDate,
+        time: state.selectedSlot,
+        services: selectedServices.map(s => s.title),
+        price: totalPrice,
+        duration: totalTime,
+        clientName: state.clientName,
+        clientPhone: state.clientPhone,
+        comment: state.clientComment
+      };
+
+      state.bookedItems.unshift(bookingRecord);
+
+      // Show in-app confirmation screen
+      const confView = document.getElementById('confirmation-view');
+      const detailsContainer = document.getElementById('conf-details-content');
+
+      detailsContainer.innerHTML =
+        '<div class="conf-row"><span class="label">Барбер</span><span class="value">' + bookingRecord.barber + '</span></div>' +
+        '<div class="conf-row"><span class="label">Дата и время</span><span class="value">' + bookingRecord.date + ', ' + bookingRecord.time + '</span></div>' +
+        '<div class="conf-row"><span class="label">Услуги</span><span class="value">' + bookingRecord.services.join(', ') + '</span></div>' +
+        '<div class="conf-row"><span class="label">Итого</span><span class="value">' + bookingRecord.price + ' ₽ (' + bookingRecord.duration + ' мин)</span></div>' +
+        '<div class="conf-row"><span class="label">Клиент</span><span class="value">' + bookingRecord.clientName + ' (' + bookingRecord.clientPhone + ')</span></div>' +
+        (bookingRecord.comment ? '<div class="conf-row"><span class="label">Комментарий</span><span class="value">' + bookingRecord.comment + '</span></div>' : '');
+
+      confView.classList.add('active');
+      if (tg && tg.MainButton) tg.MainButton.hide();
+
+      if (tg && typeof tg.sendData === 'function') {
+        tg.sendData(JSON.stringify(bookingRecord));
+      }
+    }
+
+    if (tg && tg.MainButton) {
+      tg.MainButton.onClick(() => {
+        completeBooking();
+      });
+    }
+
+    document.getElementById('btn-conf-done').addEventListener('click', () => {
+      hapticImpact('light');
+      document.getElementById('confirmation-view').classList.remove('active');
+      switchScreen('my-bookings');
+    });
+
+    function renderMyBookings() {
+      const container = document.getElementById('bookings-list');
+      container.innerHTML = '';
+
+      if (state.bookedItems.length === 0) {
+        container.innerHTML = '<div class="empty-state">У вас пока нет активных записей</div>';
+        return;
+      }
+
+      state.bookedItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'booking-item';
+
+        const info = document.createElement('div');
+        info.innerHTML =
+          '<div style="font-weight: 700; font-size: 16px; margin-bottom: 4px;">' + item.barber + '</div>' +
+          '<div style="color: var(--hint-color); font-size: 14px; margin-bottom: 6px;">' + item.date + ' в ' + item.time + '</div>' +
+          '<div style="font-size: 14px; margin-bottom: 4px;">' + item.services.join(', ') + '</div>' +
+          '<div style="font-weight: 600; font-size: 15px; color: var(--button-color);">' + item.price + ' ₽ • ' + item.duration + ' мин</div>';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn-cancel';
+        cancelBtn.textContent = 'Отменить'; // #ИНТЕРАКТИВ
+        cancelBtn.addEventListener('click', () => {
+          hapticImpact('medium');
+          state.bookingToCancelId = item.id;
+          document.getElementById('cancel-modal').classList.add('active');
+        });
+
+        card.appendChild(info);
+        card.appendChild(cancelBtn);
+        container.appendChild(card);
+      });
+    }
+
+    // Modal Events
+    document.getElementById('btn-modal-keep').addEventListener('click', () => {
+      hapticImpact('light');
+      state.bookingToCancelId = null;
+      document.getElementById('cancel-modal').classList.remove('active');
+    });
+
+    document.getElementById('btn-modal-confirm').addEventListener('click', () => {
+      hapticNotification('warning');
+      if (state.bookingToCancelId !== null) {
+        state.bookedItems = state.bookedItems.filter(b => b.id !== state.bookingToCancelId);
+        state.bookingToCancelId = null;
+      }
+      document.getElementById('cancel-modal').classList.remove('active');
+      renderMyBookings();
+    });
+
+    // Initial setup
+    initDates();
+    initSlots();
+    updateServicesSummary();
+  </script>
+</body>
+</html>
